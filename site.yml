@@ -1,0 +1,17 @@
+---
+
+- hosts: all
+  gather_facts: no
+  remote_user: ubuntu
+  become: yes
+  roles:
+    - commons
+  pre_tasks:
+    - raw: test -e /usr/bin/python || (sudo apt -y update && sudo apt install -y python-minimal)
+
+- hosts: webservers
+  gather_facts: yes
+  remote_user: ubuntu
+  become: yes
+  roles:
+    - nginx-ssl

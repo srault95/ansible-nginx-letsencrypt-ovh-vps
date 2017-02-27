@@ -1,0 +1,4 @@
+iface {{failover_name|default('ens3:0')}} inet static
+  address {{failover_address}}
+  netmask {{failover_netmask|default('255.255.255.255')}}
+  broadcast {{failover_address}}

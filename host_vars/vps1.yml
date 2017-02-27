@@ -1,0 +1,10 @@
+timezone: Europe/Paris
+
+failover_address:  1.1.1.1
+failover_name: ens3:0
+
+domains:
+  - domain.net
+  - www.domain.net
+  
+hostname: vps1

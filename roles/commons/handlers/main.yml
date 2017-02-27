@@ -1,0 +1,10 @@
+- name: restart network
+  service: name=networking state=restarted enabled=yes
+
+- name: update tzdata
+  command: /usr/sbin/dpkg-reconfigure --frontend noninteractive tzdata
+
+- name: up failover interface
+  command: ifup ens3:0
+
+  

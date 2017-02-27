@@ -1,0 +1,67 @@
+---
+
+- name: Install nginx
+  apt: name=nginx state=latest
+
+- name: create nginx directories
+  file: state=directory mode=0775 dest=/home/www/{{domains[0]}} force=yes owner=www-data group=adm
+
+- name: create log directory
+  file: 
+    state: directory 
+    mode: 0755 
+    dest: /home/www/logs
+    force: yes 
+    owner: root
+
+- name: install letsencrypt
+  shell: git clone https://github.com/certbot/certbot /opt/letsencrypt    
+  args:
+    creates: /opt/letsencrypt
+
+- name: create letsencrypt directory
+  file: name=/home/www/letsencrypt state=directory
+
+- name: Remove default nginx config
+  file: name={{items}} state=absent
+  with_items:
+    - /etc/nginx/sites-available/default
+    - /etc/nginx/sites-enabled/default
+
+- name: Install system nginx config
+  template:
+    src: templates/nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    force: yes
+    backup: yes
+  
+- name: Install nginx site for letsencrypt requests
+  template:
+    src: templates/nginx-http.j2
+    dest: /etc/nginx/sites-enabled/http
+  notify: restart nginx
+
+- name: Create letsencrypt certificate
+  shell: ./certbot-auto certonly -n --nginx -w /home/www/letsencrypt -m {{letsencrypt_email}} --agree-tos -d {{domains|join(' -d ')}}
+  args:
+    creates: /etc/letsencrypt/live/{{domains[0]}}
+    chdir: /opt/letsencrypt    
+
+- name: Generate dhparams
+  shell: openssl dhparam -out /etc/nginx/dhparams.pem 2048
+  args:
+    creates: /etc/nginx/dhparams.pem
+
+- name: Install nginx site for specified site
+  template:
+    src: templates/nginx-le.j2
+    dest: /etc/nginx/sites-enabled/le
+
+- name: Reload nginx to activate specified site
+  service: name=nginx state=restarted
+
+- name: Add letsencrypt cronjob for cert renewal
+  cron:
+    name: letsencrypt_renewal
+    special_time: weekly
+    job: letsencrypt --renew certonly -n --nginx -w /home/www/letsencrypt -m {{ letsencrypt_email }} --agree-tos -d {{ domains|join(' -d ') }} && service nginx reload

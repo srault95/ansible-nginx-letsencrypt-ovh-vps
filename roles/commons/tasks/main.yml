@@ -1,0 +1,26 @@
+---
+
+- name: Set local timezone
+  timezone: name={{timezone}}
+  notify: update tzdata
+  
+- name: set hostname
+  hostname: name="{{hostname}}"
+  
+- name: put hostname to /etc/hosts
+  copy: content="127.0.1.1 {{hostname}} {{hostname}}.{{domains[0]}}" dest=/etc/hosts backup=yes
+    
+- name: apt-get update
+  apt: update_cache=yes
+
+- name: Installs fail2ban
+  apt: name=fail2ban state=latest
+
+- name: configure ovh failover interface
+  template: src=templates/ovh-failover-interface.j2 dest=/etc/network/interfaces.d/ens3:0.cfg force=yes backup=yes
+  when: failover_address is defined
+  notify:
+     - restart network
+     - up failover interface  
+
+  

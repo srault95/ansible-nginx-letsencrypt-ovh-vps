@@ -1,0 +1,47 @@
+[INCLUDES]
+
+#before = paths-distro.conf
+before = paths-debian.conf
+
+# [DEFAULT]
+# bantime = 3600
+#
+# [sshd]
+# enabled = true
+
+bantime  = 600
+maxretry = 5
+backend = auto
+# yes:   if a hostname is encountered, a DNS lookup will be performed.
+# warn:  if a hostname is encountered, a DNS lookup will be performed,
+#        but it will be logged as a warning.
+# no:    if a hostname is encountered, will not be used for banning,
+#        but it will be logged as info.
+usedns = warn
+
+#   auto:   will use the system locale setting
+logencoding = auto
+
+# ???
+# "enabled" enables the jails.
+#  By default all jails are disabled, and it should stay this way.
+#  Enable only relevant to your setup jails in your .local or jail.d/*.conf
+#
+# true:  jail will be enabled and log files will get monitored for changes
+# false: jail is not enabled
+enabled = false
+
+filter = %(__name__)s
+
+destemail = root@localhost
+
+# Sender email address used solely for some actions
+sender = root@localhost
+
+# E-mail action. Since 0.8.1 Fail2Ban uses sendmail MTA for the
+# mailing. Change mta configuration parameter to mail if you want to
+# revert to conventional 'mail'.
+mta = sendmail
+
+# Default protocol
+protocol = tcp
